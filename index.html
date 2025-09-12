@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dayflow</title> <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+</head>
+<body>
+
+    <header class="brand-header">
+        <h1>Dayflow</h1>
+    </header>
+
+    <div class="container">
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prev-month-btn"><i class="fas fa-chevron-left"></i></button>
+                <div class="month-year-display">
+                    <h1 id="month-name"></h1>
+                    <p id="year-num"></p>
+                </div>
+                <button id="next-month-btn"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div id="calendar-grid" class="calendar-grid"></div>
+             <button id="add-task-main-btn" class="add-task-btn"><i class="fas fa-plus"></i> Add New Task</button>
+        </div>
+
+        <div class="info-panel">
+            <h2>Information</h2>
+            <div id="quote-display"></div>
+            <div class="info-links-container">
+                <h3>Quick Links</h3>
+                <div id="quick-links-list">
+                    </div>
+                <button id="add-quick-link-btn">+ Add New Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="day-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-date-display">Tasks for Day</h2>
+            <ul id="task-list"></ul>
+            <div class="add-task-form">
+                <input type="text" id="new-task-input" placeholder="Add a new task...">
+                <button id="add-task-in-modal-btn">Add</button>
+            </div>
+            <div class="modal-footer">
+                <button id="open-notes-btn"><i class="fas fa-sticky-note"></i> View Notes</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="notes-modal" class="modal-backdrop nested-modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="notes-modal-date-display">Notes for Day</h2>
+            <ul id="note-list"></ul>
+            <div class="add-note-form">
+                <textarea id="new-note-input" placeholder="Add a new note..."></textarea>
+                <button id="add-note-btn">Add Note</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-task-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Add a New Task</h2>
+            <div class="add-task-form-main">
+                <label for="main-task-text">Task Description:</label>
+                <input type="text" id="main-task-text" placeholder="e.g., Finish project report">
+                <label for="main-task-date">Start Date:</label>
+                <input type="date" id="main-task-date">
+                <label for="repeat-options">Repeat:</label>
+                <select id="repeat-options">
+                    <option value="none" selected>Does not repeat</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                </select>
+                <div id="weekly-options-container" class="hidden">
+                    <label>Repeat on:</label>
+                    <div class="weekday-checkboxes">
+                        <label><input type="checkbox" value="0"> Sun</label>
+                        <label><input type="checkbox" value="1"> Mon</label>
+                        <label><input type="checkbox" value="2"> Tue</label>
+                        <label><input type="checkbox" value="3"> Wed</label>
+                        <label><input type="checkbox" value="4"> Thu</label>
+                        <label><input type="checkbox" value="5"> Fri</label>
+                        <label><input type="checkbox" value="6"> Sat</label>
+                    </div>
+                </div>
+                <button id="add-task-submit-btn">Add Task</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="add-link-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Create New Quick Link</h2>
+            <div class="add-task-form-main">
+                <label for="link-title-input">Link Title:</label>
+                <input type="text" id="link-title-input" placeholder="e.g., Project Goals">
+                <label for="link-content-input">Content:</label>
+                <textarea id="link-content-input" placeholder="Enter the information here..."></textarea>
+                <button id="save-link-btn">Save Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="info-modal-generic" class="modal-backdrop" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="info-modal-title"></h2>
+            <p id="info-modal-content"></p>
+            <div class="modal-footer spaced">
+                <button id="delete-open-link-btn" class="delete-button"><i class="fas fa-trash-alt"></i> Delete Link</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="confirm-modal" class="modal-backdrop nested-modal" style="display: none;">
+        <div class="modal-content">
+            <h2 id="confirm-modal-title">Are you sure?</h2>
+            <p id="confirm-modal-text"></p>
+            <div class="modal-footer spaced">
+                <button id="confirm-btn-cancel" class="cancel-button">Cancel</button>
+                <button id="confirm-btn-delete" class="delete-button">Delete</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
