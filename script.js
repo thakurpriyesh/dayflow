@@ -26,6 +26,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModalContent = document.getElementById('info-modal-content');
     const confirmModal = document.getElementById('confirm-modal');
     const confirmModalText = document.getElementById('confirm-modal-text');
+    const todayDayNameEl = document.getElementById('today-day-name');
+    const todayDateStrEl = document.getElementById('today-date-str');
+    const todayTaskListEl = document.getElementById('today-task-list');
+    const todayNewTaskInput = document.getElementById('today-new-task-input');
+    const menuToggleBtn = document.getElementById('menu-toggle-btn');
+    const infoPanel = document.getElementById('info-panel');
+    const menuOverlay = document.getElementById('menu-overlay');
 
     // State
     let currentDate = new Date();
@@ -46,6 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveTasks = () => localStorage.setItem('tasks', JSON.stringify(tasks));
     const saveNotes = () => localStorage.setItem('notes', JSON.stringify(notes));
     const saveQuickLinks = () => localStorage.setItem('quickLinks', JSON.stringify(quickLinks));
+    
+    const getTodayDateString = () => {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    };
 
     const renderCalendar = () => {
         const year = currentDate.getFullYear();
@@ -64,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dayCell.textContent = day;
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             dayCell.dataset.date = dateStr;
-            const today = new Date();
-            if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+            const todayDate = new Date();
+            if (year === todayDate.getFullYear() && month === todayDate.getMonth() && day === todayDate.getDate()) {
                 dayCell.classList.add('today');
             }
             updateDayCellStatus(dayCell, dateStr);
@@ -90,22 +102,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const date = new Date(dateStr.replace(/-/g, '/'));
         const formattedDate = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         modalDateDisplay.textContent = `Tasks for ${formattedDate}`;
-        renderTasksForDay(dateStr);
+        renderTasksForDay(dateStr, taskListEl);
         dayModal.style.display = 'flex';
     };
 
-    const renderTasksForDay = (dateStr) => {
-        taskListEl.innerHTML = '';
+    const renderTasksForDay = (dateStr, targetListElement) => {
+        targetListElement.innerHTML = '';
         const dayTasks = tasks[dateStr] || [];
         if (dayTasks.length === 0) {
-            taskListEl.innerHTML = '<li>No tasks for this day.</li>'; return;
+            targetListElement.innerHTML = '<li>No tasks for this day.</li>'; return;
         }
         dayTasks.forEach((task, index) => {
             const li = document.createElement('li');
             li.className = task.completed ? 'completed' : '';
             li.innerHTML = `<input type="checkbox" data-index="${index}" ${task.completed ? 'checked' : ''}><label>${task.text}</label><button class="delete-task-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>`;
-            taskListEl.appendChild(li);
+            targetListElement.appendChild(li);
         });
+    };
+    
+    const renderTodayView = () => {
+        const today = new Date();
+        const todayDateStr = getTodayDateString();
+        todayDayNameEl.textContent = today.toLocaleDateString('en-US', { weekday: 'long' });
+        todayDateStrEl.textContent = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        renderTasksForDay(todayDateStr, todayTaskListEl);
     };
     
     const renderNotesForDay = (dateStr) => {
@@ -131,15 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
         quickLinks.forEach((link, index) => {
             const linkBtn = document.createElement('button');
             linkBtn.className = 'info-btn';
+            linkBtn.textContent = link.title;
             linkBtn.dataset.index = index;
-            const titleSpan = document.createElement('span');
-            titleSpan.textContent = link.title;
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-link-btn';
-            deleteBtn.innerHTML = '&times;';
-            deleteBtn.dataset.index = index;
-            linkBtn.appendChild(titleSpan);
-            // Delete button is now in the modal, not here.
             quickLinksList.appendChild(linkBtn);
         });
     };
@@ -154,7 +167,22 @@ document.addEventListener('DOMContentLoaded', () => {
         quoteDisplayEl.innerHTML = `"${randomQuote.text}" <span class="author">- ${randomQuote.author}</span>`;
     };
 
+    // Function to toggle the mobile menu
+    const toggleMenu = () => {
+        infoPanel.classList.toggle('open');
+        menuOverlay.classList.toggle('active');
+    };
+
     document.addEventListener('click', e => {
+        const tabBtn = e.target.closest('.tab-btn');
+        if (tabBtn) {
+            const view = tabBtn.dataset.view;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.view-content').forEach(vc => vc.classList.remove('active'));
+            tabBtn.classList.add('active');
+            document.getElementById(`${view}-view`).classList.add('active');
+        }
+
         if (e.target.closest('#prev-month-btn')) { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
         if (e.target.closest('#next-month-btn')) { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
         
@@ -168,24 +196,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 tasks[selectedDate].push({ text: taskText, completed: false });
                 saveTasks();
                 newTaskInput.value = '';
-                renderTasksForDay(selectedDate);
+                renderTasksForDay(selectedDate, taskListEl);
                 updateCalendarDayStatus(selectedDate);
+                if (selectedDate === getTodayDateString()) renderTodayView();
+            }
+        }
+        if (e.target.closest('#today-add-task-btn')) {
+            const taskText = todayNewTaskInput.value.trim();
+            const todayDateStr = getTodayDateString();
+            if (taskText) {
+                if (!tasks[todayDateStr]) tasks[todayDateStr] = [];
+                tasks[todayDateStr].push({ text: taskText, completed: false });
+                saveTasks();
+                todayNewTaskInput.value = '';
+                renderTodayView();
+                updateCalendarDayStatus(todayDateStr);
             }
         }
         if (e.target.closest('.delete-task-btn')) {
             const taskIndex = e.target.closest('.delete-task-btn').dataset.index;
-            tasks[selectedDate].splice(taskIndex, 1);
-            if (tasks[selectedDate].length === 0) delete tasks[selectedDate];
+            const list = e.target.closest('.task-list-today') ? 'today' : 'modal';
+            const dateStr = (list === 'today') ? getTodayDateString() : selectedDate;
+            tasks[dateStr].splice(taskIndex, 1);
+            if (tasks[dateStr].length === 0) delete tasks[dateStr];
             saveTasks();
-            renderTasksForDay(selectedDate);
-            updateCalendarDayStatus(selectedDate);
+            if (list === 'today') renderTodayView();
+            else renderTasksForDay(dateStr, taskListEl);
+            updateCalendarDayStatus(dateStr);
         }
-        if (e.target.matches('#task-list input[type="checkbox"]')) {
+        if (e.target.matches('#task-list input[type="checkbox"], #today-task-list input[type="checkbox"]')) {
             const taskIndex = e.target.dataset.index;
-            tasks[selectedDate][taskIndex].completed = !tasks[selectedDate][taskIndex].completed;
+            const list = e.target.closest('.task-list-today') ? 'today' : 'modal';
+            const dateStr = (list === 'today') ? getTodayDateString() : selectedDate;
+            tasks[dateStr][taskIndex].completed = !tasks[dateStr][taskIndex].completed;
             saveTasks();
-            renderTasksForDay(selectedDate);
-            updateCalendarDayStatus(selectedDate);
+            if (list === 'today') renderTodayView();
+            else renderTasksForDay(dateStr, taskListEl);
+            updateCalendarDayStatus(dateStr);
         }
         if (e.target.closest('#open-notes-btn')) {
             const date = new Date(selectedDate.replace(/-/g, '/'));
@@ -239,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
             weeklyOptionsContainer.classList.add('hidden');
             addTaskModal.style.display = 'none';
             renderCalendar();
+            renderTodayView();
         }
         if(e.target.id === 'repeat-options') { weeklyOptionsContainer.classList.toggle('hidden', repeatOptions.value !== 'weekly'); }
         if (e.target.closest('#add-quick-link-btn')) { addLinkModal.style.display = 'flex'; }
@@ -290,17 +338,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (modal.id === 'info-modal-generic') linkIndexToDelete = null;
             }
         }
-    });
-
-    // **FIXED**: The condition was incorrect, now it only fires on the 'Enter' key.
-    document.addEventListener('keypress', e => {
-        if (e.key === 'Enter' && document.activeElement === newTaskInput) {
-            document.getElementById('add-task-in-modal-btn').click();
+        // Mobile Menu Toggle
+        if (e.target.closest('#menu-toggle-btn') || e.target.id === 'menu-overlay') {
+            toggleMenu();
         }
     });
 
+    document.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+            if (document.activeElement === newTaskInput) {
+                document.getElementById('add-task-in-modal-btn').click();
+            } else if (document.activeElement === todayNewTaskInput) {
+                document.getElementById('today-add-task-btn').click();
+            }
+        }
+    });
+
+    // --- Initial Load ---
     displayRandomQuote();
     setInterval(displayRandomQuote, 30000);
     renderCalendar();
     renderQuickLinks();
+    renderTodayView();
 });

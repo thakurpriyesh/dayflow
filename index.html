@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dayflow</title> <link rel="stylesheet" href="style.css">
+    <title>Dayflow</title>
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 </head>
@@ -11,33 +12,51 @@
 
     <header class="brand-header">
         <h1>Dayflow</h1>
+        <button id="menu-toggle-btn" class="menu-toggle-btn"><i class="fas fa-bars"></i></button>
     </header>
 
     <div class="container">
-        <div class="calendar-container">
-            <div class="calendar-header">
-                <button id="prev-month-btn"><i class="fas fa-chevron-left"></i></button>
-                <div class="month-year-display">
-                    <h1 id="month-name"></h1>
-                    <p id="year-num"></p>
-                </div>
-                <button id="next-month-btn"><i class="fas fa-chevron-right"></i></button>
+        <div class="main-view-container">
+            <div class="view-tabs">
+                <button class="tab-btn active" data-view="today">Today</button>
+                <button class="tab-btn" data-view="calendar">Calendar</button>
             </div>
-            <div id="calendar-grid" class="calendar-grid"></div>
-             <button id="add-task-main-btn" class="add-task-btn"><i class="fas fa-plus"></i> Add New Task</button>
+            <div id="today-view" class="view-content active">
+                <div class="today-header">
+                    <h1 id="today-day-name"></h1>
+                    <p id="today-date-str"></p>
+                </div>
+                <ul id="today-task-list" class="task-list-today"></ul>
+                <div class="add-task-form">
+                    <input type="text" id="today-new-task-input" placeholder="Add a new task for today...">
+                    <button id="today-add-task-btn">Add</button>
+                </div>
+            </div>
+            <div id="calendar-view" class="view-content  temp-class">
+                <div class="calendar-header">
+                    <button id="prev-month-btn"><i class="fas fa-chevron-left"></i></button>
+                    <div class="month-year-display">
+                        <h1 id="month-name"></h1>
+                        <p id="year-num"></p>
+                    </div>
+                    <button id="next-month-btn"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                <div id="calendar-grid" class="calendar-grid"></div>
+                <button id="add-task-main-btn" class="add-task-btn"><i class="fas fa-plus"></i> Add New Task</button>
+            </div>
         </div>
 
-        <div class="info-panel">
-            <h2>Information</h2>
+        <div id="info-panel" class="info-panel">
             <div id="quote-display"></div>
             <div class="info-links-container">
-                <h3>Notes</h3>
-                <div id="quick-links-list">
-                    </div>
-                <button id="add-quick-link-btn">+ Add Notes</button>
+                <h3>Quick Links</h3>
+                <div id="quick-links-list"></div>
+                <button id="add-quick-link-btn">+ Add New Link</button>
             </div>
         </div>
     </div>
+    
+    <div id="menu-overlay" class="menu-overlay"></div>
 
     <div id="day-modal" class="modal-backdrop" style="display: none;">
         <div class="modal-content">
@@ -53,7 +72,6 @@
             </div>
         </div>
     </div>
-    
     <div id="notes-modal" class="modal-backdrop nested-modal" style="display: none;">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -65,7 +83,6 @@
             </div>
         </div>
     </div>
-
     <div id="add-task-modal" class="modal-backdrop" style="display: none;">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -97,7 +114,6 @@
             </div>
         </div>
     </div>
-    
     <div id="add-link-modal" class="modal-backdrop" style="display: none;">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -111,7 +127,6 @@
             </div>
         </div>
     </div>
-
     <div id="info-modal-generic" class="modal-backdrop" style="display: none;">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
@@ -122,7 +137,6 @@
             </div>
         </div>
     </div>
-    
     <div id="confirm-modal" class="modal-backdrop nested-modal" style="display: none;">
         <div class="modal-content">
             <h2 id="confirm-modal-title">Are you sure?</h2>
