@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderTodayView();
         }
         if(e.target.id === 'repeat-options') { weeklyOptionsContainer.classList.toggle('hidden', repeatOptions.value !== 'weekly'); }
-        if (e.target.closest('#add-quick-link-btn')) { addLinkModal.style.display = 'flex'; }
+        if (e.target.closest('#add-quick-link-btn')) { addLinkModal.style.display = 'flex'; toggleMenu();}
         if (e.target.closest('#save-link-btn')) {
             const title = linkTitleInput.value.trim();
             const content = linkContentInput.value.trim();
