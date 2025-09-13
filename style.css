@@ -802,21 +802,21 @@ body {
     }
 
     .container {
-    display: flex;
-    width: 100%;
-    max-width: 1400px;
-    height: 85vh;
-    gap: 20px;
-    position: relative;
-}
+        display: flex;
+        width: 100%;
+        max-width: 1400px;
+        height: 85vh;
+        gap: 20px;
+        position: relative;
+    }
 
-.main-view-container {
-    position: absolute;
-    width: 100%;
-    padding: 40px;
-    display: flex; 
-    flex-direction: column;
-    min-height: 0;
-    top:-50px;
-}
+    .main-view-container {
+        position: absolute;
+        width: 100%;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        top: -50px;
+    }
 }

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 </head>
+
 <body>
 
     <header class="brand-header">
@@ -49,13 +51,13 @@
         <div id="info-panel" class="info-panel">
             <div id="quote-display"></div>
             <div class="info-links-container">
-                <h3>Quick Links</h3>
+                <h3>Notes</h3>
                 <div id="quick-links-list"></div>
-                <button id="add-quick-link-btn">+ Add New Link</button>
+                <button id="add-quick-link-btn">+ Add New Note</button>
             </div>
         </div>
     </div>
-    
+
     <div id="menu-overlay" class="menu-overlay"></div>
 
     <div id="day-modal" class="modal-backdrop" style="display: none;">
@@ -117,13 +119,13 @@
     <div id="add-link-modal" class="modal-backdrop" style="display: none;">
         <div class="modal-content">
             <span class="close-btn">&times;</span>
-            <h2>Create New Quick Link</h2>
+            <h2>Create New Note</h2>
             <div class="add-task-form-main">
-                <label for="link-title-input">Link Title:</label>
+                <label for="link-title-input">Title:</label>
                 <input type="text" id="link-title-input" placeholder="e.g., Project Goals">
                 <label for="link-content-input">Content:</label>
                 <textarea id="link-content-input" placeholder="Enter the information here..."></textarea>
-                <button id="save-link-btn">Save Link</button>
+                <button id="save-link-btn">Save Note</button>
             </div>
         </div>
     </div>
@@ -133,7 +135,8 @@
             <h2 id="info-modal-title"></h2>
             <p id="info-modal-content"></p>
             <div class="modal-footer spaced">
-                <button id="delete-open-link-btn" class="delete-button"><i class="fas fa-trash-alt"></i> Delete Link</button>
+                <button id="delete-open-link-btn" class="delete-button"><i class="fas fa-trash-alt"></i> Delete
+                    Note</button>
             </div>
         </div>
     </div>
@@ -144,10 +147,12 @@
             <div class="modal-footer spaced">
                 <button id="confirm-btn-cancel" class="cancel-button">Cancel</button>
                 <button id="confirm-btn-delete" class="delete-button">Delete</button>
+                <!-- The "This Day" button will be injected dynamically -->
             </div>
         </div>
     </div>
-    
+
     <script src="script.js"></script>
 </body>
+
 </html>

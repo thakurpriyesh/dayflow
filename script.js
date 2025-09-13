@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModalContent = document.getElementById('info-modal-content');
     const confirmModal = document.getElementById('confirm-modal');
     const confirmModalText = document.getElementById('confirm-modal-text');
+    const confirmModalTitle = document.getElementById('confirm-modal-title');
+    const confirmBtnDelete = document.getElementById('confirm-btn-delete');
     const todayDayNameEl = document.getElementById('today-day-name');
     const todayDateStrEl = document.getElementById('today-date-str');
     const todayTaskListEl = document.getElementById('today-task-list');
@@ -41,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let quickLinks = JSON.parse(localStorage.getItem('quickLinks')) || [];
     let selectedDate = null;
     let linkIndexToDelete = null;
+    let deleteTaskContext = null; // For repeating task deletion modal
 
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const quotes = [
@@ -53,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveTasks = () => localStorage.setItem('tasks', JSON.stringify(tasks));
     const saveNotes = () => localStorage.setItem('notes', JSON.stringify(notes));
     const saveQuickLinks = () => localStorage.setItem('quickLinks', JSON.stringify(quickLinks));
-    
+
     const getTodayDateString = () => {
         const today = new Date();
         return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -119,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             targetListElement.appendChild(li);
         });
     };
-    
+
     const renderTodayView = () => {
         const today = new Date();
         const todayDateStr = getTodayDateString();
@@ -127,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         todayDateStrEl.textContent = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
         renderTasksForDay(todayDateStr, todayTaskListEl);
     };
-    
+
     const renderNotesForDay = (dateStr) => {
         noteListEl.innerHTML = '';
         const dayNotes = notes[dateStr] || [];
@@ -159,9 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateCalendarDayStatus = (dateStr) => {
         const dayCell = document.querySelector(`.day-cell[data-date='${dateStr}']`);
-        if(dayCell) updateDayCellStatus(dayCell, dateStr);
+        if (dayCell) updateDayCellStatus(dayCell, dateStr);
     };
-    
+
     const displayRandomQuote = () => {
         const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
         quoteDisplayEl.innerHTML = `"${randomQuote.text}" <span class="author">- ${randomQuote.author}</span>`;
@@ -185,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (e.target.closest('#prev-month-btn')) { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
         if (e.target.closest('#next-month-btn')) { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
-        
+
         const dayCell = e.target.closest('.day-cell:not(.empty)');
         if (dayCell) { openDayModal(dayCell.dataset.date); }
 
@@ -217,12 +220,42 @@ document.addEventListener('DOMContentLoaded', () => {
             const taskIndex = e.target.closest('.delete-task-btn').dataset.index;
             const list = e.target.closest('.task-list-today') ? 'today' : 'modal';
             const dateStr = (list === 'today') ? getTodayDateString() : selectedDate;
-            tasks[dateStr].splice(taskIndex, 1);
-            if (tasks[dateStr].length === 0) delete tasks[dateStr];
-            saveTasks();
-            if (list === 'today') renderTodayView();
-            else renderTasksForDay(dateStr, taskListEl);
-            updateCalendarDayStatus(dateStr);
+            const task = tasks[dateStr][taskIndex];
+
+            // Check if this task is a repeating task (by checking if it appears on other days)
+            let isRepeating = false;
+            for (const date in tasks) {
+                if (date !== dateStr && tasks[date].some(t => t.text === task.text)) {
+                    isRepeating = true;
+                    break;
+                }
+            }
+
+            if (isRepeating) {
+                // Show modal with two options
+                confirmModalTitle.textContent = 'Delete Repeating Task';
+                confirmModalText.innerHTML = `This is a repeating task.<br>Delete only for this day or for all days?`;
+                confirmBtnDelete.textContent = 'All Days';
+                // Add a new button for "This Day"
+                if (!document.getElementById('confirm-btn-dayonly')) {
+                    const btn = document.createElement('button');
+                    btn.id = 'confirm-btn-dayonly';
+                    btn.className = 'delete-button';
+                    btn.textContent = 'This Day';
+                    confirmBtnDelete.parentNode.insertBefore(btn, confirmBtnDelete);
+                }
+                confirmModal.style.display = 'flex';
+                deleteTaskContext = { dateStr, taskIndex, taskText: task.text, list };
+            } else {
+                // Normal delete
+                tasks[dateStr].splice(taskIndex, 1);
+                if (tasks[dateStr].length === 0) delete tasks[dateStr];
+                saveTasks();
+                if (list === 'today') renderTodayView();
+                else renderTasksForDay(dateStr, taskListEl);
+                updateCalendarDayStatus(dateStr);
+            }
+            return; // Prevent further handling
         }
         if (e.target.matches('#task-list input[type="checkbox"], #today-task-list input[type="checkbox"]')) {
             const taskIndex = e.target.dataset.index;
@@ -288,8 +321,14 @@ document.addEventListener('DOMContentLoaded', () => {
             renderCalendar();
             renderTodayView();
         }
-        if(e.target.id === 'repeat-options') { weeklyOptionsContainer.classList.toggle('hidden', repeatOptions.value !== 'weekly'); }
-        if (e.target.closest('#add-quick-link-btn')) { addLinkModal.style.display = 'flex'; toggleMenu();}
+        if (e.target.id === 'repeat-options') { weeklyOptionsContainer.classList.toggle('hidden', repeatOptions.value !== 'weekly'); }
+
+        if (e.target.closest('#add-quick-link-btn')) {
+            addLinkModal.style.display = 'flex';
+            if (infoPanel.classList.contains('open')) {
+                toggleMenu();
+            }
+        }
         if (e.target.closest('#save-link-btn')) {
             const title = linkTitleInput.value.trim();
             const content = linkContentInput.value.trim();
@@ -313,22 +352,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 infoModalTitle.textContent = linkData.title;
                 infoModalContent.textContent = linkData.content;
                 genericInfoModal.style.display = 'flex';
+                if (infoPanel.classList.contains('open')) {
+                    toggleMenu();
+                }
             }
         }
         if (e.target.closest('#delete-open-link-btn')) {
-            confirmModalText.textContent = `Do you really want to delete the "${quickLinks[linkIndexToDelete].title}" link? This action cannot be undone.`;
+            // Remove "This Day" button if present
+            const btn = document.getElementById('confirm-btn-dayonly');
+            if (btn) btn.remove();
+            confirmModalTitle.textContent = 'Delete Note';
+            confirmModalText.textContent = `Do you really want to delete the "${quickLinks[linkIndexToDelete].title}" note? This action cannot be undone.`;
+            confirmBtnDelete.textContent = 'Delete';
             confirmModal.style.display = 'flex';
+            deleteTaskContext = null; // Make sure this is not set for quick links
         }
+
         if (e.target.closest('#confirm-btn-delete')) {
-            quickLinks.splice(linkIndexToDelete, 1);
-            saveQuickLinks();
-            renderQuickLinks();
-            confirmModal.style.display = 'none';
-            genericInfoModal.style.display = 'none';
-            linkIndexToDelete = null;
+            // "All Days" for repeating task
+            if (deleteTaskContext) {
+                // Remove all tasks with the same text from all dates
+                for (const date in tasks) {
+                    tasks[date] = tasks[date].filter(t => t.text !== deleteTaskContext.taskText);
+                    if (tasks[date].length === 0) delete tasks[date];
+                }
+                saveTasks();
+                renderCalendar();
+                renderTodayView();
+                if (deleteTaskContext.list === 'today') renderTodayView();
+                else renderTasksForDay(deleteTaskContext.dateStr, taskListEl);
+                updateCalendarDayStatus(deleteTaskContext.dateStr);
+                deleteTaskContext = null;
+                confirmModal.style.display = 'none';
+                // Remove extra button if present
+                const btn = document.getElementById('confirm-btn-dayonly');
+                if (btn) btn.remove();
+                return;
+            }
+            // Quick link deletion
+            if (linkIndexToDelete !== null) {
+                quickLinks.splice(Number(linkIndexToDelete), 1);
+                saveQuickLinks();
+                renderQuickLinks();
+                confirmModal.style.display = 'none';
+                genericInfoModal.style.display = 'none';
+                linkIndexToDelete = null;
+            }
+        }
+
+        if (e.target.closest('#confirm-btn-dayonly')) {
+            // "This Day" for repeating task
+            if (deleteTaskContext) {
+                const { dateStr, taskIndex, list } = deleteTaskContext;
+                tasks[dateStr].splice(taskIndex, 1);
+                if (tasks[dateStr].length === 0) delete tasks[dateStr];
+                saveTasks();
+                if (list === 'today') renderTodayView();
+                else renderTasksForDay(dateStr, taskListEl);
+                updateCalendarDayStatus(dateStr);
+                deleteTaskContext = null;
+                confirmModal.style.display = 'none';
+                // Remove extra button if present
+                const btn = document.getElementById('confirm-btn-dayonly');
+                if (btn) btn.remove();
+            }
         }
         if (e.target.closest('#confirm-btn-cancel')) {
             confirmModal.style.display = 'none';
+            deleteTaskContext = null;
+            // Remove extra button if present
+            const btn = document.getElementById('confirm-btn-dayonly');
+            if (btn) btn.remove();
         }
         const modal = e.target.closest('.modal-backdrop');
         if (modal) {
